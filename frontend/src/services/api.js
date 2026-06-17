@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = '/api';
+// In production (Railway), use VITE_API_URL env var pointing to the backend service.
+// In local dev, fall back to '/api' which is proxied by Vite to localhost:5000.
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_URL,
