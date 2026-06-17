@@ -87,4 +87,9 @@ export const adminAPI = {
   deleteProduct: (id) => api.delete(`/admin/products/${id}`),
 };
 
+// Universities API (PDDikti proxy)
+export const universitiesAPI = {
+  search: (keyword) => api.get(`/universities/search/${encodeURIComponent(keyword)}`),
+};
+
 export default api;

@@ -107,23 +107,6 @@ function Login() {
         <div className="auth-link">
           Belum punya akun? <Link to="/register">Daftar sekarang</Link>
         </div>
-
-        {/* Demo accounts info */}
-        <div className="mt-4 p-3" style={{
-          background: 'rgba(124, 77, 255, 0.08)',
-          borderRadius: '12px',
-          border: '1px solid rgba(124, 77, 255, 0.15)'
-        }}>
-          <small style={{ color: '#b8bdd4', display: 'block', marginBottom: '8px', fontWeight: 600 }}>
-            <i className="bi bi-info-circle me-1"></i> Akun Demo:
-          </small>
-          <small style={{ color: '#8b92b3', display: 'block' }}>
-            Admin: admin@kampus.ac.id / admin123
-          </small>
-          <small style={{ color: '#8b92b3', display: 'block' }}>
-            User: budi@student.ac.id / password123
-          </small>
-        </div>
       </div>
     </div>
   );

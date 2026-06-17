@@ -46,11 +46,19 @@ function ProductCard({ product }) {
         <div className="product-card-price">{formatPrice(product.harga)}</div>
 
         <div className="product-card-footer">
-          <div className="product-card-seller">
-            <div className="product-card-seller-avatar">
-              {product.penjual_nama?.charAt(0).toUpperCase() || 'U'}
+          <div>
+            <div className="product-card-seller">
+              <div className="product-card-seller-avatar">
+                {product.penjual_nama?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <span>{product.penjual_nama || 'Unknown'}</span>
             </div>
-            <span>{product.penjual_nama || 'Unknown'}</span>
+            {product.penjual_universitas && (
+              <div className="product-card-university">
+                <i className="bi bi-building"></i>
+                <span>{product.penjual_universitas}</span>
+              </div>
+            )}
           </div>
           {product.lokasi && (
             <div className="product-card-location">

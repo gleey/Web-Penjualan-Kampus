@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { productsAPI, categoriesAPI } from '../services/api';
+import SearchableSelect from '../components/SearchableSelect';
+import { productsAPI, categoriesAPI, universitiesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 function Home() {
@@ -11,6 +12,7 @@ function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('kategori') || '');
+  const [selectedUniversity, setSelectedUniversity] = useState(searchParams.get('universitas') || '');
   const [sort, setSort] = useState(searchParams.get('sort') || 'terbaru');
   const [pagination, setPagination] = useState(null);
   const { isAuthenticated } = useAuth();
@@ -25,6 +27,7 @@ function Home() {
       const params = {};
       if (searchParams.get('search')) params.search = searchParams.get('search');
       if (searchParams.get('kategori')) params.kategori = searchParams.get('kategori');
+      if (searchParams.get('universitas')) params.universitas = searchParams.get('universitas');
       if (searchParams.get('sort')) params.sort = searchParams.get('sort');
       if (searchParams.get('page')) params.page = searchParams.get('page');
 
@@ -48,6 +51,7 @@ function Home() {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (selectedCategory) params.set('kategori', selectedCategory);
+    if (selectedUniversity) params.set('universitas', selectedUniversity);
     if (sort && sort !== 'terbaru') params.set('sort', sort);
     setSearchParams(params);
   };
@@ -64,6 +68,27 @@ function Home() {
     params.delete('page');
     setSearchParams(params);
   };
+
+  const handleUniversityChange = (value) => {
+    setSelectedUniversity(value);
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set('universitas', value);
+    } else {
+      params.delete('universitas');
+    }
+    params.delete('page');
+    setSearchParams(params);
+  };
+
+  const searchUniversities = useCallback(async (keyword) => {
+    try {
+      const res = await universitiesAPI.search(keyword);
+      return res.data.universities || [];
+    } catch {
+      return [];
+    }
+  }, []);
 
   const handleSortChange = (e) => {
     const newSort = e.target.value;
@@ -169,6 +194,17 @@ function Home() {
                   </option>
                 ))}
               </select>
+              <div className="university-filter-wrapper">
+                <SearchableSelect
+                  value={selectedUniversity}
+                  onChange={handleUniversityChange}
+                  onSearch={searchUniversities}
+                  placeholder="Filter Universitas..."
+                  minChars={3}
+                  id="home-universitas-filter"
+                  variant="light"
+                />
+              </div>
               <select className="sort-select" value={sort} onChange={handleSortChange}>
                 <option value="terbaru">Terbaru</option>
                 <option value="terlama">Terlama</option>
@@ -189,6 +225,43 @@ function Home() {
           </form>
         </div>
       </section>
+
+      {/* Active University Filter Badge */}
+      {selectedUniversity && (
+        <section className="container">
+          <div style={{ paddingTop: '0.75rem' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem 1rem',
+              background: 'linear-gradient(135deg, rgba(124, 77, 255, 0.1), rgba(0, 188, 212, 0.08))',
+              borderRadius: '20px',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+              color: '#7c4dff',
+              border: '1px solid rgba(124, 77, 255, 0.15)',
+            }}>
+              <i className="bi bi-building"></i>
+              {selectedUniversity}
+              <button
+                onClick={() => handleUniversityChange('')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#7c4dff',
+                  cursor: 'pointer',
+                  padding: '0 2px',
+                  fontSize: '0.9rem',
+                  lineHeight: 1,
+                }}
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </span>
+          </div>
+        </section>
+      )}
 
       {/* Category Chips */}
       <section className="container">

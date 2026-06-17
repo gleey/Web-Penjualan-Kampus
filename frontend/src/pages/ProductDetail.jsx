@@ -153,6 +153,20 @@ function ProductDetail() {
                   <div>
                     <div className="seller-name">{product.penjual_nama}</div>
                     <div className="seller-email">{product.penjual_email}</div>
+                    {product.penjual_universitas && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.82rem',
+                        color: '#00bcd4',
+                        fontWeight: 500,
+                        marginTop: '2px',
+                      }}>
+                        <i className="bi bi-building" style={{ fontSize: '0.75rem' }}></i>
+                        {product.penjual_universitas}
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { universitiesAPI } from '../services/api';
+import SearchableSelect from '../components/SearchableSelect';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ function Register() {
     password: '',
     confirmPassword: '',
     no_telepon: '',
+    universitas: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,6 +22,19 @@ function Register() {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const handleUniversitasChange = (value) => {
+    setFormData({ ...formData, universitas: value });
+  };
+
+  const searchUniversities = useCallback(async (keyword) => {
+    try {
+      const res = await universitiesAPI.search(keyword);
+      return res.data.universities || [];
+    } catch {
+      return [];
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +57,7 @@ function Register() {
         email: formData.email,
         password: formData.password,
         no_telepon: formData.no_telepon,
+        universitas: formData.universitas || undefined,
       });
       navigate('/');
     } catch (err) {
@@ -105,6 +122,20 @@ function Register() {
               value={formData.email}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="mb-3">
+            <SearchableSelect
+              value={formData.universitas}
+              onChange={handleUniversitasChange}
+              onSearch={searchUniversities}
+              placeholder="Ketik nama universitas (min. 3 huruf)"
+              label="Universitas"
+              icon="bi-building"
+              minChars={3}
+              id="register-universitas"
+              variant="dark"
             />
           </div>
 

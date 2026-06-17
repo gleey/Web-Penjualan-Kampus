@@ -32,19 +32,23 @@ async function seed() {
 
     // Check if admin exists
     const adminCheck = await pool.query("SELECT id FROM users WHERE email = 'admin@kampus.ac.id'");
-    
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('admin123', salt);
+
     if (adminCheck.rows.length === 0) {
       // Create admin user with hashed password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('admin123', salt);
-
       await pool.query(
         "INSERT INTO users (nama, email, password, no_telepon, role) VALUES ($1, $2, $3, $4, $5)",
         ['Administrator', 'admin@kampus.ac.id', hashedPassword, '081234567890', 'admin']
       );
       console.log('✅ Admin account created (admin@kampus.ac.id / admin123)');
     } else {
-      console.log('ℹ️  Admin account already exists');
+      // Update password to ensure it is correct
+      await pool.query(
+        "UPDATE users SET password = $1 WHERE email = 'admin@kampus.ac.id'",
+        [hashedPassword]
+      );
+      console.log('ℹ️  Admin account already exists, password updated to admin123');
     }
 
     // Create sample mahasiswa accounts
@@ -54,7 +58,6 @@ async function seed() {
       { nama: 'Ahmad Fauzi', email: 'ahmad@student.ac.id', phone: '083333333333' },
     ];
 
-    const salt = await bcrypt.genSalt(10);
     const defaultPass = await bcrypt.hash('password123', salt);
 
     for (const user of sampleUsers) {
@@ -64,9 +67,14 @@ async function seed() {
           'INSERT INTO users (nama, email, password, no_telepon, role) VALUES ($1, $2, $3, $4, $5)',
           [user.nama, user.email, defaultPass, user.phone, 'mahasiswa']
         );
+      } else {
+        await pool.query(
+          'UPDATE users SET password = $1 WHERE email = $2',
+          [defaultPass, user.email]
+        );
       }
     }
-    console.log('✅ Sample mahasiswa accounts created');
+    console.log('✅ Sample mahasiswa accounts created/updated');
 
     // Create sample products
     const budiId = (await pool.query("SELECT id FROM users WHERE email = 'budi@student.ac.id'")).rows[0]?.id;

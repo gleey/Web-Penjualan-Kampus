@@ -50,11 +50,14 @@ Project Framework/
 │   ├── middleware/
 │   │   ├── auth.js               # JWT middleware
 │   │   └── upload.js             # Multer config
+│   ├── migrations/
+│   │   └── add_universitas.js    # Migrasi kolom universitas ke tabel users
 │   ├── routes/
 │   │   ├── auth.js               # Auth endpoints
 │   │   ├── products.js           # Product CRUD
 │   │   ├── categories.js         # Category endpoints
-│   │   └── admin.js              # Admin endpoints
+│   │   ├── admin.js              # Admin endpoints
+│   │   └── universities.js       # Pencarian universitas (PDDikti API)
 │   ├── uploads/                  # Uploaded images
 │   ├── database.sql              # SQL schema
 │   ├── seed.js                   # Database seeder
@@ -110,6 +113,13 @@ psql -U postgres -d marketplace_kampus -f backend/database.sql
 ```bash
 cd backend
 npm run seed
+```
+
+4. Jalankan migrasi jika database sudah pernah di-seed sebelumnya dan ingin memperbarui struktur tabel:
+
+```bash
+cd backend
+npm run migrate
 ```
 
 ### Langkah 3: Konfigurasi Environment
@@ -170,19 +180,25 @@ Frontend berjalan di: `http://localhost:5173`
 | GET    | `/api/auth/me`      | Data user saat ini     | Auth      |
 
 ### Products
-| Method | Endpoint              | Deskripsi                    | Akses          |
-|--------|-----------------------|------------------------------|----------------|
-| GET    | `/api/products`       | Daftar produk + search/filter| Public         |
-| GET    | `/api/products/my`    | Produk milik user            | Auth           |
-| GET    | `/api/products/:id`   | Detail produk                | Public         |
-| POST   | `/api/products`       | Tambah produk                | Auth           |
-| PUT    | `/api/products/:id`   | Edit produk                  | Owner/Admin    |
-| DELETE | `/api/products/:id`   | Hapus produk                 | Owner/Admin    |
+| Method | Endpoint              | Deskripsi                                    | Akses          |
+|--------|-----------------------|----------------------------------------------|----------------|
+| GET    | `/api/products`       | Daftar produk + search/filter/universitas     | Public         |
+| GET    | `/api/products/my`    | Produk milik user                            | Auth           |
+| GET    | `/api/products/:id`   | Detail produk                                | Public         |
+| POST   | `/api/products`       | Tambah produk                                | Auth           |
+| PUT    | `/api/products/:id`   | Edit produk                                  | Owner/Admin    |
+| DELETE | `/api/products/:id`   | Hapus produk                                 | Owner/Admin    |
 
 ### Categories
 | Method | Endpoint              | Deskripsi              | Akses     |
 |--------|-----------------------|------------------------|-----------|
 | GET    | `/api/categories`     | Daftar kategori        | Public    |
+
+### Universities
+| Method | Endpoint                    | Deskripsi                                   | Akses     |
+|--------|-----------------------------|---------------------------------------------|-----------|
+| GET    | `/api/universities/search/:keyword` | Mencari universitas via PDDikti API | Public    |
+
 
 ### Admin
 | Method | Endpoint                        | Deskripsi              | Akses     |
@@ -208,6 +224,7 @@ Frontend berjalan di: `http://localhost:5173`
 | password   | VARCHAR(255) | Hash bcrypt                   |
 | no_telepon | VARCHAR(20)  | Nomor telepon                 |
 | role       | VARCHAR(20)  | 'mahasiswa' atau 'admin'      |
+| universitas| VARCHAR(200) | Asal universitas (nullable)   |
 | created_at | TIMESTAMP    | Tanggal registrasi            |
 
 ### Tabel: `categories`

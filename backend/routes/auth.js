@@ -10,7 +10,7 @@ const router = express.Router();
 // POST /api/auth/register — Register new mahasiswa
 router.post('/register', async (req, res) => {
   try {
-    const { nama, email, password, no_telepon } = req.body;
+    const { nama, email, password, no_telepon, universitas } = req.body;
 
     // Validation
     if (!nama || !email || !password) {
@@ -29,8 +29,8 @@ router.post('/register', async (req, res) => {
 
     // Insert user
     const result = await pool.query(
-      'INSERT INTO users (nama, email, password, no_telepon, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, nama, email, no_telepon, role, created_at',
-      [nama, email, hashedPassword, no_telepon || null, 'mahasiswa']
+      'INSERT INTO users (nama, email, password, no_telepon, role, universitas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, nama, email, no_telepon, role, universitas, created_at',
+      [nama, email, hashedPassword, no_telepon || null, 'mahasiswa', universitas || null]
     );
 
     const user = result.rows[0];
@@ -50,7 +50,8 @@ router.post('/register', async (req, res) => {
         nama: user.nama,
         email: user.email,
         no_telepon: user.no_telepon,
-        role: user.role
+        role: user.role,
+        universitas: user.universitas
       }
     });
   } catch (error) {
@@ -97,7 +98,8 @@ router.post('/login', async (req, res) => {
         nama: user.nama,
         email: user.email,
         no_telepon: user.no_telepon,
-        role: user.role
+        role: user.role,
+        universitas: user.universitas
       }
     });
   } catch (error) {
@@ -110,7 +112,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, nama, email, no_telepon, role, avatar, created_at FROM users WHERE id = $1',
+      'SELECT id, nama, email, no_telepon, role, avatar, universitas, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 

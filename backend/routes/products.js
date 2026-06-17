@@ -8,16 +8,16 @@ const router = express.Router();
 // GET /api/products — List all available products (with search & filter)
 router.get('/', async (req, res) => {
   try {
-    const { search, kategori, sort, page = 1, limit = 12 } = req.query;
+    const { search, kategori, universitas, sort, page = 1, limit = 12 } = req.query;
     const offset = (page - 1) * limit;
     let query = `
-      SELECT p.*, c.nama as kategori_nama, u.nama as penjual_nama, u.no_telepon as penjual_telepon
+      SELECT p.*, c.nama as kategori_nama, u.nama as penjual_nama, u.no_telepon as penjual_telepon, u.universitas as penjual_universitas
       FROM products p
       LEFT JOIN categories c ON p.kategori_id = c.id
       LEFT JOIN users u ON p.user_id = u.id
       WHERE p.status = 'tersedia'
     `;
-    let countQuery = `SELECT COUNT(*) FROM products p WHERE p.status = 'tersedia'`;
+    let countQuery = `SELECT COUNT(*) FROM products p LEFT JOIN users u ON p.user_id = u.id WHERE p.status = 'tersedia'`;
     const params = [];
     const countParams = [];
     let paramIndex = 1;
@@ -39,6 +39,16 @@ router.get('/', async (req, res) => {
       countQuery += ` AND p.kategori_id = $${countParamIndex}`;
       params.push(kategori);
       countParams.push(kategori);
+      paramIndex++;
+      countParamIndex++;
+    }
+
+    // Filter by university
+    if (universitas) {
+      query += ` AND u.universitas = $${paramIndex}`;
+      countQuery += ` AND u.universitas = $${countParamIndex}`;
+      params.push(universitas);
+      countParams.push(universitas);
       paramIndex++;
       countParamIndex++;
     }
@@ -108,7 +118,7 @@ router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT p.*, c.nama as kategori_nama, c.icon as kategori_icon,
-              u.nama as penjual_nama, u.email as penjual_email, u.no_telepon as penjual_telepon, u.avatar as penjual_avatar
+              u.nama as penjual_nama, u.email as penjual_email, u.no_telepon as penjual_telepon, u.avatar as penjual_avatar, u.universitas as penjual_universitas
        FROM products p
        LEFT JOIN categories c ON p.kategori_id = c.id
        LEFT JOIN users u ON p.user_id = u.id
@@ -123,7 +133,7 @@ router.get('/:id', async (req, res) => {
     // Get related products (same category, exclude current)
     const product = result.rows[0];
     const relatedResult = await pool.query(
-      `SELECT p.*, c.nama as kategori_nama, u.nama as penjual_nama
+      `SELECT p.*, c.nama as kategori_nama, u.nama as penjual_nama, u.universitas as penjual_universitas
        FROM products p
        LEFT JOIN categories c ON p.kategori_id = c.id
        LEFT JOIN users u ON p.user_id = u.id
