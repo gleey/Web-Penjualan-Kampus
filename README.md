@@ -165,9 +165,8 @@ Frontend berjalan di: `http://localhost:5173`
 |-----------|------------------------|--------------|
 | Admin     | admin@kampus.ac.id     | admin123     |
 
-```bash
 Role Mahasiswa Bisa Langsung Melakukan Register
-```
+
 ---
 
 ## 📡 REST API Endpoints
