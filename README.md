@@ -29,14 +29,14 @@ Platform jual beli barang antar mahasiswa. Memungkinkan mahasiswa untuk menjual 
 
 ## 🛠️ Tech Stack
 
-| Layer     | Teknologi                          |
+| Layer     | Teknologi                           |
 |-----------|-------------------------------------|
-| Frontend  | React.js 18 + Vite                 |
-| Styling   | Bootstrap 5 + Bootstrap Icons      |
-| Backend   | Node.js + Express.js               |
+| Frontend  | React.js 18 + Vite                  |
+| Styling   | Bootstrap 5 + Bootstrap Icons       |
+| Backend   | Node.js + Express.js                |
 | Database  | PostgreSQL                          |
 | Auth      | JWT (JSON Web Token) + bcrypt       |
-| Upload    | Multer                              |
+| Upload    | Cloudinary                          |
 
 ---
 
