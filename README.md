@@ -164,9 +164,7 @@ Frontend berjalan di: `http://localhost:5173`
 | Role      | Email                  | Password     |
 |-----------|------------------------|--------------|
 | Admin     | admin@kampus.ac.id     | admin123     |
-| Mahasiswa | budi@student.ac.id     | password123  |
-| Mahasiswa | siti@student.ac.id     | password123  |
-| Mahasiswa | ahmad@student.ac.id    | password123  |
+Role Mahasiswa Bisa Langsung Melakukan Register
 
 ---
 
