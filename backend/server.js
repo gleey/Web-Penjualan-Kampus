@@ -42,7 +42,37 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Terjadi kesalahan internal server.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
-  console.log(`📦 API tersedia di http://localhost:${PORT}/api`);
-});
+// Auto-seed on startup (triggered by SEED_ON_START=true env var)
+async function startServer() {
+  if (process.env.SEED_ON_START === 'true') {
+    console.log('🌱 SEED_ON_START=true detected, running database seed...');
+    try {
+      const seed = require('./seed');
+      // seed.js calls process.exit() — override it temporarily
+      const originalExit = process.exit;
+      process.exit = (code) => {
+        process.exit = originalExit;
+        if (code === 0) {
+          console.log('✅ Seed completed, starting server...');
+        } else {
+          console.error('❌ Seed failed, starting server anyway...');
+        }
+        app.listen(PORT, () => {
+          console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
+          console.log(`📦 API tersedia di http://localhost:${PORT}/api`);
+          console.log('⚠️  Hapus env var SEED_ON_START setelah ini!');
+        });
+      };
+    } catch (err) {
+      console.error('❌ Seed error:', err.message);
+    }
+  } else {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
+      console.log(`📦 API tersedia di http://localhost:${PORT}/api`);
+    });
+  }
+}
+
+startServer();
+
