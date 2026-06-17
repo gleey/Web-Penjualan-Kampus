@@ -11,11 +11,13 @@ async function seed() {
     const sqlPath = path.join(__dirname, 'database.sql');
     const sql = fs.readFileSync(sqlPath, 'utf8');
 
-    // Split by semicolons and execute each statement
-    const statements = sql
+    // Strip single-line comments FIRST, then split by semicolons
+    const sqlWithoutComments = sql.replace(/--[^\r\n]*/g, '');
+
+    const statements = sqlWithoutComments
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => s.length > 0);
 
     for (const statement of statements) {
       try {
