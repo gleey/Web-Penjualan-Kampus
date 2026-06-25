@@ -32,6 +32,55 @@ async function seed() {
 
     console.log('✅ Tables created successfully');
 
+    // Clean up duplicate categories and add UNIQUE constraint
+    try {
+      console.log('🔄 Cleaning up duplicate categories and adding UNIQUE constraint...');
+
+      // 1. Remap any products pointing to duplicate categories
+      await pool.query(`
+        UPDATE products
+        SET kategori_id = (
+          SELECT MIN(orig.id)
+          FROM categories orig
+          JOIN categories dup ON LOWER(orig.nama) = LOWER(dup.nama)
+          WHERE dup.id = products.kategori_id
+        )
+        WHERE kategori_id IN (
+          SELECT id FROM categories WHERE id NOT IN (
+            SELECT MIN(id) FROM categories GROUP BY LOWER(nama)
+          )
+        )
+      `);
+
+      // 2. Delete duplicate categories
+      await pool.query(`
+        DELETE FROM categories
+        WHERE id NOT IN (
+          SELECT MIN(id)
+          FROM categories
+          GROUP BY LOWER(nama)
+        )
+      `);
+
+      // 3. Add UNIQUE constraint to categories(nama) if not already present
+      await pool.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 
+            FROM pg_constraint 
+            WHERE conname = 'categories_nama_key'
+          ) THEN
+            ALTER TABLE categories ADD CONSTRAINT categories_nama_key UNIQUE (nama);
+          END IF;
+        END $$;
+      `);
+
+      console.log('✅ Categories table cleaned up and UNIQUE constraint verified');
+    } catch (cleanupErr) {
+      console.warn('⚠️  Warning during categories cleanup:', cleanupErr.message);
+    }
+
     // Check if admin exists
     const adminCheck = await pool.query("SELECT id FROM users WHERE email = 'admin@kampus.ac.id'");
     const salt = await bcrypt.genSalt(10);
@@ -60,19 +109,33 @@ async function seed() {
       { nama: 'Ahmad Fauzi', email: 'ahmad@student.ac.id', phone: '083333333333' },
     ];
 
+    const universities = [
+      'UNIVERSITAS INDONESIA',
+      'UNIVERSITAS GADJAH MADA',
+      'INSTITUT TEKNOLOGI BANDUNG',
+      'UNIVERSITAS AIRLANGGA',
+      'UNIVERSITAS PADJADJARAN',
+      'UNIVERSITAS DIPONEGORO',
+      'UNIVERSITAS BRAWIJAYA',
+      'INSTITUT TEKNOLOGI SEPULUH NOPEMBER',
+      'UNIVERSITAS SEBELAS MARET',
+      'UNIVERSITAS HASANUDDIN'
+    ];
+
     const defaultPass = await bcrypt.hash('password123', salt);
 
     for (const user of sampleUsers) {
+      const randomUni = universities[Math.floor(Math.random() * universities.length)];
       const check = await pool.query('SELECT id FROM users WHERE email = $1', [user.email]);
       if (check.rows.length === 0) {
         await pool.query(
-          'INSERT INTO users (nama, email, password, no_telepon, role) VALUES ($1, $2, $3, $4, $5)',
-          [user.nama, user.email, defaultPass, user.phone, 'mahasiswa']
+          'INSERT INTO users (nama, email, password, no_telepon, role, universitas) VALUES ($1, $2, $3, $4, $5, $6)',
+          [user.nama, user.email, defaultPass, user.phone, 'mahasiswa', randomUni]
         );
       } else {
         await pool.query(
-          'UPDATE users SET password = $1 WHERE email = $2',
-          [defaultPass, user.email]
+          'UPDATE users SET password = $1, universitas = $2 WHERE email = $3',
+          [defaultPass, randomUni, user.email]
         );
       }
     }
